@@ -1,0 +1,5 @@
+{
+  "name": "托管云TCO&ROI测算工具",
+  "description": "A professional interactive dashboard to analyze Cloud Migration ROI vs On-Premises TCO, quantifying SLA downtime risks and financial impact.",
+  "requestFramePermissions": []
+}

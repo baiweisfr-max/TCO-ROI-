@@ -182,7 +182,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ results, inputs, onOpenSla
               </p>
               <ul className="list-disc pl-3 space-y-1.5 text-slate-300 font-mono text-[10px]">
                 <li>
-                  <strong className="text-rose-400">本地自建:</strong> 硬件CapEx + 电力/机柜 + 带宽 + 运维人力 + 维保(第2年起)
+                  <strong className="text-rose-400">本地自建:</strong> 硬件与软件CapEx + 电力/机柜 + 带宽 + 运维人力 + 维保(第2年起)
                 </li>
                 <li>
                   <strong className="text-emerald-400">业务上云:</strong> 迁移费 + 云服务年账单

@@ -56,67 +56,99 @@ export const InputPanel: React.FC<InputPanelProps> = ({ inputs, setInputs }) => 
           <h3 className="font-bold uppercase text-xs tracking-widest">本地自建 (现状)</h3>
         </div>
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <InputSlider
-            label="硬件采购/更新成本 (CapEx)"
-            value={inputs.hardwareCost}
-            min={10000}
-            max={1000000}
-            step={5000}
-            onChange={(v) => update('hardwareCost', v)}
-            tooltip="购买或更新服务器、存储和网络设备的成本 (第0年)。"
-          />
-          <InputSlider
-            label="硬件年维保费率 (%)"
-            value={inputs.maintenanceYearlyRate}
-            min={0}
-            max={30}
-            step={1}
-            isPercentage
-            onChange={(v) => update('maintenanceYearlyRate', v)}
-            tooltip="硬件过保后的年度维保/支持费用比例。模型假设第1年由原厂质保覆盖，费用从第2年开始计算。"
-          />
-          <InputSlider
-            label="月度电力、机柜与带宽"
-            value={inputs.monthlyPowerCooling + inputs.monthlyBandwidth}
-            min={100}
-            max={20000}
-            step={100}
-            onChange={(v) => {
-               // Split arbitrarily for simplicity in this combined slider, or just treat as OpEx
-               const half = v/2;
-               setInputs(prev => ({...prev, monthlyPowerCooling: half, monthlyBandwidth: half }));
-            }}
-            tooltip="机架空间、电力、冷却和网络带宽的月度经常性成本。"
-          />
-          <InputSlider
-            label="运维人员数量"
-            value={inputs.adminCount}
-            min={0}
-            max={20}
-            step={1}
-            unit=""
-            onChange={(v) => update('adminCount', v)}
-            tooltip="负责管理基础设施的全职员工 (FTE) 数量。"
-          />
-          <InputSlider
-            label="运维人员平均月薪"
-            value={inputs.adminMonthlySalary}
-            min={2000}
-            max={20000}
-            step={500}
-            onChange={(v) => update('adminMonthlySalary', v)}
-            tooltip="每位 IT 员工的月度综合人力成本。"
-          />
-          <InputSlider
-            label="当前 SLA / 可用性 (%)"
-            value={inputs.onPremSla}
-            min={90}
-            max={99.9}
-            step={0.1}
-            isPercentage
-            onChange={(v) => update('onPremSla', v)}
-            tooltip="当前历史可用性。99.5% ≈ 每年宕机 44 小时。"
-          />
+          {/* Hardware Group */}
+          <div className="mb-6 border-b border-slate-100 pb-4">
+            <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">硬件基础设施</h4>
+            <InputSlider
+              label="硬件采购成本"
+              value={inputs.hardwareCost}
+              min={10000}
+              max={1000000}
+              step={5000}
+              onChange={(v) => update('hardwareCost', v)}
+              tooltip="服务器、存储和网络设备的硬件 CapEx 成本 (第0年)。"
+            />
+            <InputSlider
+              label="硬件维保"
+              value={inputs.hardwareMaintenanceYearlyRate}
+              min={0}
+              max={30}
+              step={1}
+              isPercentage
+              onChange={(v) => update('hardwareMaintenanceYearlyRate', v)}
+              tooltip="硬件过保后的年度原厂维保费用。模型假设前3年由质保覆盖(免费)，费用从第4年开始计算。"
+            />
+          </div>
+
+          {/* Software Group */}
+          <div className="mb-6 border-b border-slate-100 pb-4">
+            <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">软件与授权</h4>
+            <InputSlider
+              label="软件采购成本"
+              value={inputs.softwareCost}
+              min={0}
+              max={1000000}
+              step={5000}
+              onChange={(v) => update('softwareCost', v)}
+              tooltip="操作系统、虚拟化软件、数据库等永久授权 (Perpetual License) 的初始采购费用。"
+            />
+            <InputSlider
+              label="软件维保"
+              value={inputs.softwareMaintenanceYearlyRate}
+              min={0}
+              max={50}
+              step={1}
+              isPercentage
+              onChange={(v) => update('softwareMaintenanceYearlyRate', v)}
+              tooltip="软件的年度技术支持 (SnS) 或订阅费用比例。通常从第2年开始产生（假设首年包含在采购中）。"
+            />
+          </div>
+
+          <div className="pt-2">
+            <h4 className="text-xs font-bold text-slate-400 uppercase mb-3">环境与人力</h4>
+            <InputSlider
+              label="年度电力成本"
+              value={inputs.annualPowerCooling + inputs.annualBandwidth}
+              min={1000}
+              max={240000} // Increased max significantly
+              step={1000}
+              onChange={(v) => {
+                // Split arbitrarily for simplicity in this combined slider
+                const half = v/2;
+                setInputs(prev => ({...prev, annualPowerCooling: half, annualBandwidth: half }));
+              }}
+              tooltip="机架空间、电力、冷却和网络带宽的年度经常性成本。"
+            />
+            <InputSlider
+              label="运维人员数量"
+              value={inputs.adminCount}
+              min={0}
+              max={20}
+              step={1}
+              unit=""
+              onChange={(v) => update('adminCount', v)}
+              tooltip="负责管理基础设施的全职员工 (FTE) 数量。"
+            />
+            <InputSlider
+              label="运维人员年薪"
+              value={inputs.adminAnnualSalary}
+              min={24000}
+              max={500000} // Up to 500k CNY/year
+              step={5000}
+              onChange={(v) => update('adminAnnualSalary', v)}
+              tooltip="每位 IT 员工的年度综合人力成本。"
+            />
+            <InputSlider
+              label="本地自建SLA"
+              value={inputs.onPremSla}
+              min={90}
+              max={99.9}
+              step={0.1}
+              isPercentage
+              onChange={(v) => update('onPremSla', v)}
+              tooltip="当前历史可用性。99.5% ≈ 每年宕机 44 小时。"
+            />
+          </div>
         </div>
       </section>
 
@@ -146,7 +178,7 @@ export const InputPanel: React.FC<InputPanelProps> = ({ inputs, setInputs }) => 
             tooltip="专业服务咨询、人员培训和新旧系统并行运行的成本。"
           />
           <InputSlider
-            label="目标 SLA (%)"
+            label="云上SLA"
             value={inputs.cloudSla}
             min={99}
             max={99.999}

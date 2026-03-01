@@ -105,7 +105,7 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ inputs, result
               </h3>
               <p className="text-sm text-slate-600 mt-1">
                 从重资产的 CapEx (硬件采购) 模式转向弹性的 OpEx (按需付费) 模式。
-                虽然云端年度账单可能看似较高，但考虑到本地硬件维保（每年 {inputs.maintenanceYearlyRate}%）和运维人力成本的隐性增长，云模式在长期运营中更具可预测性。
+                虽然云端年度账单可能看似较高，但考虑到本地硬件维保（每年 {inputs.hardwareMaintenanceYearlyRate}%）和运维人力成本的隐性增长，云模式在长期运营中更具可预测性。
               </p>
             </div>
           </div>
@@ -167,7 +167,7 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ inputs, result
             </tbody>
           </table>
           <p className="text-xs text-slate-500 mt-2">
-            * 注：本地 IT 支出包含初始硬件 CapEx、电力、带宽、运维人力及维保费用。云端 IT 支出包含迁移费及年度订阅费。
+            * 注：本地 IT 支出包含初始软硬件 CapEx、电力、带宽、运维人力及维保费用。云端 IT 支出包含迁移费及年度订阅费。
           </p>
         </div>
 
@@ -234,11 +234,11 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ inputs, result
                     <span className="font-mono">{formatCurrencyDetailed(inputs.annualRevenue)}</span>
                  </div>
                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">当前 SLA</span>
+                    <span className="text-slate-600">本地自建SLA</span>
                     <span className="font-mono">{inputs.onPremSla}%</span>
                  </div>
                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">目标 SLA</span>
+                    <span className="text-slate-600">云上SLA</span>
                     <span className="font-mono">{inputs.cloudSla}%</span>
                  </div>
               </div>
@@ -250,16 +250,24 @@ export const PrintableReport: React.FC<PrintableReportProps> = ({ inputs, result
                     <span className="font-mono">{formatCurrencyDetailed(inputs.hardwareCost)}</span>
                  </div>
                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">硬件年维保率</span>
-                    <span className="font-mono">{inputs.maintenanceYearlyRate}%</span>
+                    <span className="text-slate-600">硬件维保</span>
+                    <span className="font-mono">{inputs.hardwareMaintenanceYearlyRate}%</span>
                  </div>
                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">运维人力 (人/月)</span>
-                    <span className="font-mono">{inputs.adminCount} 人 * {inputs.adminMonthlySalary}/月</span>
+                    <span className="text-slate-600">软件采购成本</span>
+                    <span className="font-mono">{formatCurrencyDetailed(inputs.softwareCost)}</span>
                  </div>
                  <div className="flex justify-between py-1 border-b border-slate-100">
-                    <span className="text-slate-600">机房水电带宽/月</span>
-                    <span className="font-mono">{formatCurrencyDetailed(inputs.monthlyPowerCooling + inputs.monthlyBandwidth)}</span>
+                    <span className="text-slate-600">软件维保</span>
+                    <span className="font-mono">{inputs.softwareMaintenanceYearlyRate}%</span>
+                 </div>
+                 <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">运维人力 (人/年)</span>
+                    <span className="font-mono">{inputs.adminCount} 人 * {formatCurrencyDetailed(inputs.adminAnnualSalary)}/年</span>
+                 </div>
+                 <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-600">年度电力成本</span>
+                    <span className="font-mono">{formatCurrencyDetailed(inputs.annualPowerCooling + inputs.annualBandwidth)}</span>
                  </div>
               </div>
 

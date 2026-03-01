@@ -11,7 +11,9 @@ export const calculateTCO = (inputs: Inputs): SimulationResult => {
   const onPremDowntimeHours = HOURS_IN_YEAR * (1 - inputs.onPremSla / 100);
   const cloudDowntimeHours = HOURS_IN_YEAR * (1 - inputs.cloudSla / 100);
 
-  const hourlyLaborCost = (inputs.adminMonthlySalary / 160) * inputs.adminCount;
+  // Calculate hourly labor cost from annual salary
+  // Assumption: Standard working hours ~1920/year (160 * 12)
+  const hourlyLaborCost = (inputs.adminAnnualSalary / (12 * 160)) * inputs.adminCount;
   const downtimeCostPerHour = revenuePerHour + hourlyLaborCost;
 
   const onPremYearlyDowntimeCost = onPremDowntimeHours * downtimeCostPerHour;
@@ -20,29 +22,37 @@ export const calculateTCO = (inputs: Inputs): SimulationResult => {
   const slaBenefitYearly = onPremYearlyDowntimeCost - cloudYearlyDowntimeCost;
 
   // 2. Yearly Operational Costs
-  // Split Maintenance from other OpEx to handle Year 1 Warranty logic
-  const yearlyMaintenanceCost = inputs.hardwareCost * (inputs.maintenanceYearlyRate / 100);
+  // Maintenance Costs
+  const yearlyHardwareMaintenance = inputs.hardwareCost * (inputs.hardwareMaintenanceYearlyRate / 100);
+  const yearlySoftwareMaintenance = inputs.softwareCost * (inputs.softwareMaintenanceYearlyRate / 100);
 
+  // OpEx is now directly annual inputs
   const onPremBaseOpEx = 
-    (inputs.monthlyPowerCooling * 12) + 
-    (inputs.monthlyBandwidth * 12) + 
-    (inputs.adminMonthlySalary * 12 * inputs.adminCount);
+    inputs.annualPowerCooling + 
+    inputs.annualBandwidth + 
+    (inputs.adminAnnualSalary * inputs.adminCount);
 
   const cloudOpEx = inputs.annualCloudBill;
 
-  let onPremCumulative = inputs.hardwareCost; // Year 0 CapEx
-  let cloudCumulative = inputs.migrationCost; // Year 0 Migration Cost
+  // Initial CapEx (Year 0)
+  let onPremCumulative = inputs.hardwareCost + inputs.softwareCost; 
+  let cloudCumulative = inputs.migrationCost; 
 
   // Track Direct Costs separately (IT Spending only, excluding downtime risk)
-  let onPremDirectCumulative = inputs.hardwareCost;
+  let onPremDirectCumulative = inputs.hardwareCost + inputs.softwareCost;
   let cloudDirectCumulative = inputs.migrationCost;
 
   let breakEvenYear: number | null = null;
 
   for (let i = 1; i <= years; i++) {
     // Determine OpEx for this year
-    // FIX: Exclude maintenance cost in Year 1 (typically covered by hardware purchase warranty)
-    const currentYearOnPremOpEx = onPremBaseOpEx + (i === 1 ? 0 : yearlyMaintenanceCost);
+    // Hardware maintenance: Free for first 3 years (Standard Warranty)
+    const currentYearHardwareMaint = i <= 3 ? 0 : yearlyHardwareMaintenance;
+    
+    // Software maintenance: Usually included in Year 1 purchase, pays from Year 2
+    const currentYearSoftwareMaint = i === 1 ? 0 : yearlySoftwareMaintenance;
+
+    const currentYearOnPremOpEx = onPremBaseOpEx + currentYearHardwareMaint + currentYearSoftwareMaint;
 
     // Add OpEx + Downtime Risk (Total Value View)
     onPremCumulative += currentYearOnPremOpEx + onPremYearlyDowntimeCost;
@@ -71,7 +81,6 @@ export const calculateTCO = (inputs: Inputs): SimulationResult => {
 
   // 3. ROI Calculation
   // New Logic: (SLA Benefit) / (Cloud IT Cost - OnPrem IT Cost)
-  // Meaning: The return on the EXTRA cost paid for Cloud to get better SLA.
   
   const totalSlaBenefit = slaBenefitYearly * years;
   

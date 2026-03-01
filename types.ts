@@ -4,14 +4,18 @@ export interface Inputs {
   
   // On-Prem Costs
   hardwareCost: number; // CapEx (Year 0)
-  monthlyPowerCooling: number;
-  monthlyBandwidth: number;
+  hardwareMaintenanceYearlyRate: number; // % of hardware cost
+  
+  softwareCost: number; // New: CapEx (Year 0) - OS, DB, Virtualization, etc.
+  softwareMaintenanceYearlyRate: number; // New: % of software cost
+  
+  annualPowerCooling: number; // Changed from monthly
+  annualBandwidth: number;    // Changed from monthly
   adminCount: number;
-  adminMonthlySalary: number;
-  maintenanceYearlyRate: number; // % of hardware cost
+  adminAnnualSalary: number;  // Changed from monthly
   
   // Cloud Costs
-  annualCloudBill: number; // Changed from monthlyCloudBill
+  annualCloudBill: number;
   migrationCost: number; // One-time
   
   // Advanced / SLA

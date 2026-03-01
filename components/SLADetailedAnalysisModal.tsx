@@ -19,7 +19,8 @@ export const SLADetailedAnalysisModal: React.FC<SLADetailedAnalysisModalProps> =
   const diffHours = onPremHours - cloudHours;
 
   const revenuePerHour = inputs.annualRevenue / HOURS_IN_YEAR;
-  const laborCostPerHour = (inputs.adminMonthlySalary / 160) * inputs.adminCount;
+  // Calculate hourly from annual: Annual / 12 months / 160 hours
+  const laborCostPerHour = (inputs.adminAnnualSalary / (12 * 160)) * inputs.adminCount;
   const totalCostPerHour = revenuePerHour + laborCostPerHour;
 
   const onPremLoss = onPremHours * totalCostPerHour;
@@ -176,7 +177,10 @@ export const SLADetailedAnalysisModal: React.FC<SLADetailedAnalysisModalProps> =
                     <div className="col-span-4 p-4 text-slate-600">
                         <div className="flex gap-2 items-start">
                             <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
-                            <span><strong className="text-slate-800">停机窗口:</strong> 固件升级、内存扩容通常需要完全关机。业务需在深夜中断。</span>
+                            <span>
+                                <strong className="text-slate-800">技能与流程短板:</strong> 
+                                本地运维人员技术栈有限（网络、存储、虚拟化、安全多领域交叉），变更操作依赖个人经验，缺乏标准化流程（SOP）约束，人为失误率高，维护压力高度集中。
+                            </span>
                         </div>
                     </div>
                     <div className="col-span-5 p-4 text-slate-600 bg-emerald-50/10">

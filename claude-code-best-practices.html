@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Claude Code 使用最佳实践 · 教材</title>
+<style>
+  :root {
+    --bg: #f7f8fa;
+    --surface: #ffffff;
+    --text: #1f2430;
+    --muted: #5b6472;
+    --border: #e3e7ee;
+    --brand: #c2552d;        /* Anthropic 暖橙 */
+    --brand-soft: #fbeee7;
+    --brand-dark: #9d3f1d;
+    --code-bg: #1e2330;
+    --code-text: #e6e9f0;
+    --green: #1f8a4c;
+    --green-soft: #e7f6ee;
+    --red: #c0392b;
+    --red-soft: #fdecea;
+    --blue: #2563a8;
+    --blue-soft: #e8f1fb;
+    --amber: #9a6700;
+    --amber-soft: #fcf3d7;
+    --radius: 10px;
+    --maxw: 880px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC",
+      "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    line-height: 1.75;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  code, pre, .mono {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  /* ---------- Header ---------- */
+  header.hero {
+    background: linear-gradient(135deg, #c2552d 0%, #9d3f1d 100%);
+    color: #fff;
+    padding: 56px 24px 48px;
+    text-align: center;
+  }
+  header.hero .kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    opacity: 0.85;
+    margin: 0 0 14px;
+  }
+  header.hero h1 {
+    margin: 0 0 14px;
+    font-size: 2.3rem;
+    line-height: 1.25;
+    font-weight: 800;
+  }
+  header.hero p.sub {
+    margin: 0 auto;
+    max-width: 600px;
+    font-size: 1.05rem;
+    opacity: 0.95;
+  }
+  header.hero .meta {
+    margin-top: 22px;
+    font-size: 13px;
+    opacity: 0.8;
+  }
+
+  /* ---------- Layout ---------- */
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ---------- TOC ---------- */
+  nav.toc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin: -28px auto 44px;
+    max-width: var(--maxw);
+    box-shadow: 0 8px 24px rgba(31, 36, 48, 0.06);
+  }
+  nav.toc h2 {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    color: var(--brand-dark);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 1.3em;
+    columns: 2;
+    column-gap: 36px;
+  }
+  nav.toc li { margin: 6px 0; break-inside: avoid; }
+  nav.toc a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  nav.toc a:hover { color: var(--brand); border-bottom-color: var(--brand); }
+
+  /* ---------- Sections ---------- */
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 30px 34px;
+    margin: 0 0 28px;
+    scroll-margin-top: 16px;
+  }
+  section > h2 {
+    margin: 0 0 6px;
+    font-size: 1.55rem;
+    color: var(--brand-dark);
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  section > h2 .num {
+    font-size: 0.95rem;
+    color: #fff;
+    background: var(--brand);
+    border-radius: 8px;
+    padding: 2px 10px;
+    font-weight: 700;
+    flex: none;
+  }
+  section .lead {
+    color: var(--muted);
+    margin: 0 0 22px;
+    font-size: 0.98rem;
+  }
+  h3 {
+    margin: 28px 0 10px;
+    font-size: 1.18rem;
+    color: var(--text);
+    border-left: 4px solid var(--brand);
+    padding-left: 12px;
+  }
+  h4 { margin: 20px 0 8px; font-size: 1.02rem; }
+  p { margin: 12px 0; }
+  ul, ol { padding-left: 1.4em; }
+  li { margin: 6px 0; }
+
+  a { color: var(--brand); }
+
+  /* ---------- Inline code ---------- */
+  :not(pre) > code {
+    background: var(--brand-soft);
+    color: var(--brand-dark);
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.88em;
+    word-break: break-word;
+  }
+
+  /* ---------- Code blocks ---------- */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 16px 18px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 0.86rem;
+    line-height: 1.6;
+    margin: 14px 0;
+  }
+  pre code { background: none; color: inherit; padding: 0; }
+  .cap {
+    font-size: 12px;
+    color: var(--muted);
+    margin: -6px 0 16px;
+    padding-left: 2px;
+  }
+
+  /* ---------- Callouts ---------- */
+  .box {
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 18px 0;
+    border-left: 4px solid;
+    font-size: 0.95rem;
+  }
+  .box .tag {
+    display: inline-block;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .box.tip   { background: var(--green-soft); border-color: var(--green); }
+  .box.tip .tag { color: var(--green); }
+  .box.note  { background: var(--blue-soft); border-color: var(--blue); }
+  .box.note .tag { color: var(--blue); }
+  .box.warn  { background: var(--amber-soft); border-color: var(--amber); }
+  .box.warn .tag { color: var(--amber); }
+  .box.danger{ background: var(--red-soft); border-color: var(--red); }
+  .box.danger .tag { color: var(--red); }
+
+  /* ---------- Good/Bad compare ---------- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 18px 0; }
+  .compare .card {
+    border-radius: 8px; padding: 14px 16px; font-size: 0.92rem;
+  }
+  .compare .bad  { background: var(--red-soft);   border: 1px solid #f3c5bf; }
+  .compare .good { background: var(--green-soft);  border: 1px solid #bfe4cd; }
+  .compare h5 { margin: 0 0 8px; font-size: 0.95rem; }
+  .compare .bad h5  { color: var(--red); }
+  .compare .good h5 { color: var(--green); }
+  .compare code { background: rgba(0,0,0,0.06); color: inherit; }
+
+  /* ---------- Tables ---------- */
+  .tablewrap { overflow-x: auto; margin: 16px 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.9rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 9px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--brand-soft); color: var(--brand-dark); font-weight: 700; }
+  tr:nth-child(even) td { background: #fafbfc; }
+  td code { white-space: nowrap; }
+
+  /* ---------- Misc ---------- */
+  .pill {
+    display: inline-block; background: var(--brand-soft); color: var(--brand-dark);
+    border-radius: 999px; padding: 2px 12px; font-size: 12px; font-weight: 600;
+    margin: 0 6px 6px 0;
+  }
+  hr { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  .back { font-size: 12px; color: var(--muted); text-decoration: none; }
+  .back:hover { color: var(--brand); }
+
+  footer {
+    text-align: center; color: var(--muted); font-size: 13px;
+    padding: 30px 24px 60px; max-width: var(--maxw); margin: 0 auto;
+  }
+  footer .sources { text-align: left; margin-top: 18px; font-size: 12px; }
+
+  @media (max-width: 680px) {
+    nav.toc ol { columns: 1; }
+    .compare { grid-template-columns: 1fr; }
+    header.hero h1 { font-size: 1.7rem; }
+    section { padding: 22px 18px; }
+  }
+
+  /* ---------- Print ---------- */
+  @media print {
+    body { background: #fff; font-size: 11.5px; }
+    header.hero { background: #fff !important; color: #000; padding: 0 0 14px; border-bottom: 2px solid #c2552d; }
+    header.hero .kicker, header.hero .meta { color: #555; opacity: 1; }
+    header.hero h1 { color: #9d3f1d; }
+    nav.toc { box-shadow: none; margin: 16px 0; break-after: page; }
+    section { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; page-break-inside: avoid; }
+    pre { white-space: pre-wrap; word-break: break-word; }
+    a { color: #000; text-decoration: none; }
+    .back { display: none; }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <p class="kicker">Anthropic · Claude Code 团队培训教材</p>
+  <h1>Claude Code 使用最佳实践</h1>
+  <p class="sub">从入门到进阶,系统掌握 CLAUDE.md、上下文管理、计划模式工作流,以及命令 / Hooks / 子代理 / MCP 等自定义扩展。</p>
+  <p class="meta">本教材所有命令名与配置路径均依据 Claude Code 官方文档(code.claude.com/docs)核对 · 适用于团队整体培训</p>
+</header>
+
+<nav class="toc" id="top">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">导言:Claude Code 是什么</a></li>
+    <li><a href="#s2">快速上手</a></li>
+    <li><a href="#s3">核心心智模型:上下文是稀缺资源</a></li>
+    <li><a href="#s4">CLAUDE.md 与记忆系统</a></li>
+    <li><a href="#s5">上下文窗口管理</a></li>
+    <li><a href="#s6">工作流与计划模式</a></li>
+    <li><a href="#s7">自定义扩展:命令 / Hooks / 子代理 / MCP</a></li>
+    <li><a href="#s8">权限管理与安全</a></li>
+    <li><a href="#s9">常见误区与排错速查</a></li>
+    <li><a href="#s10">速查卡(Cheat Sheet)</a></li>
+  </ol>
+</nav>
+
+<div class="wrap">
+
+<!-- ============ 1 ============ -->
+<section id="s1">
+  <h2><span class="num">1</span> 导言:Claude Code 是什么</h2>
+  <p class="lead">在动手之前,先建立一个准确的认知:Claude Code 是一个"会用工具的智能体",而不是一个聊天框。</p>
+
+  <p><strong>Claude Code</strong> 是 Anthropic 官方的命令行编码智能体(agentic coding tool)。它运行在你的终端里,能够读写文件、执行命令、运行测试、调用外部工具,并在一个"<strong>读取 → 思考 → 调用工具 → 观察结果 → 继续</strong>"的循环中自主完成多步骤的工程任务。它也提供桌面端、Web 端(claude.ai/code)以及 VS Code / JetBrains 插件等形态。</p>
+
+  <h3>它擅长什么</h3>
+  <ul>
+    <li><strong>跨文件的功能开发</strong>:理解现有代码风格后实现新功能、重构、修 bug。</li>
+    <li><strong>探索陌生代码库</strong>:快速回答"这个功能在哪实现""调用链是什么"。</li>
+    <li><strong>测试与验证</strong>:写测试、跑测试、根据失败迭代。</li>
+    <li><strong>自动化琐事</strong>:批量改写、生成样板、写提交信息、开 PR。</li>
+  </ul>
+
+  <div class="box note">
+    <span class="tag">如何使用本教材</span>
+    第 1–3 章建立基础认知;第 4–6 章是<strong>日常高频核心</strong>(记忆、上下文、工作流),建议反复实践;第 7–8 章是进阶扩展与团队治理;第 9–10 章是可随时翻阅的速查。每章结尾的 <span class="pill">✅ 正例 / ❌ 反例</span> 对照是最值得带走的部分。
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="s2">
+  <h2><span class="num">2</span> 快速上手</h2>
+  <p class="lead">五分钟跑通第一个任务,先有体感,再谈最佳实践。</p>
+
+  <h3>安装与启动</h3>
+  <pre><code># 全局安装(需要 Node.js)
+npm install -g @anthropic-ai/claude-code
+
+# 进入你的项目目录后启动
+cd your-project
+claude</code></pre>
+  <p>首次启动会引导你完成登录认证。之后在交互界面里直接用自然语言下达任务即可。</p>
+
+  <h3>三个最该先记住的输入前缀</h3>
+  <div class="tablewrap">
+  <table>
+    <tr><th>前缀</th><th>作用</th><th>示例</th></tr>
+    <tr><td><code>/</code></td><td>斜杠命令(内置或自定义)</td><td><code>/init</code>、<code>/clear</code></td></tr>
+    <tr><td><code>@</code></td><td>引用文件 / 资源(带路径自动补全)</td><td><code>解释 @src/auth.ts</code></td></tr>
+    <tr><td><code>!</code></td><td>进入 shell 模式直接执行命令</td><td><code>!git status</code></td></tr>
+  </table>
+  </div>
+
+  <h3>第一条建议:先用计划模式探索</h3>
+  <p>对不熟悉的代码库,启动后先按 <code>Shift+Tab</code> 切到 <strong>计划模式(plan)</strong>,让 Claude 只读地探索并给出方案,再决定是否执行。详见<a href="#s6">第 6 章</a>。</p>
+
+  <div class="box tip">
+    <span class="tag">提示</span>
+    打断很重要:任何时候按 <code>Esc</code> 可以中断 Claude 当前动作(上下文保留),立即纠偏;连按两次 <code>Esc</code>(或 <code>/rewind</code>)可回退到之前的对话/代码状态。
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="s3">
+  <h2><span class="num">3</span> 核心心智模型:上下文是稀缺资源</h2>
+  <p class="lead">几乎所有 Claude Code 的最佳实践,都源于同一条约束。</p>
+
+  <blockquote class="box note" style="font-style:italic;">
+    "大多数最佳实践都基于一个约束:Claude 的上下文窗口会很快被填满,并且随着填满,性能会下降。<strong>上下文窗口是最重要的、需要被管理的资源。</strong>"
+    <br><span style="font-style:normal;font-size:12px;color:var(--muted)">—— Claude Code 官方最佳实践文档</span>
+  </blockquote>
+
+  <h3>智能体工作循环</h3>
+  <p>Claude Code 每一步都在做:读取你的指令与上下文 → 决定调用哪个工具(读文件 / 改文件 / 跑命令 / 搜索)→ 观察返回结果 → 继续下一步,直到任务完成。<strong>每一次工具调用的输入输出,都会占用上下文窗口。</strong></p>
+
+  <h3>由此推导出的三条铁律</h3>
+  <ul>
+    <li><strong>给它精准的上下文,而不是更多的上下文。</strong>无关信息会稀释关键指令,导致 Claude "忽略你真正想要的东西"。</li>
+    <li><strong>任务之间要清场。</strong>不相关的历史会拖累表现 —— 这就是 <code>/clear</code> 存在的理由。</li>
+    <li><strong>把可复用的项目知识沉淀到 CLAUDE.md,而不是每次重复打字。</strong>这就是<a href="#s4">第 4 章</a>的主题。</li>
+  </ul>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="s4">
+  <h2><span class="num">4</span> CLAUDE.md 与记忆系统</h2>
+  <p class="lead">CLAUDE.md 是你与 Claude 之间的"项目契约"。写好它,胜过每次重复解释。</p>
+
+  <p><code>CLAUDE.md</code> 是一个特殊文件,Claude 在<strong>每次会话开始时都会读取</strong>它,并作为上下文(注意:是上下文,不是被强制执行的配置)。它适合放入构建命令、代码风格、工作流规则等"Claude 猜不到、但每次都需要"的项目知识。</p>
+
+  <h3>4.1 放在哪里:记忆层级</h3>
+  <p>Claude 会从启动目录<strong>沿目录树向上</strong>查找,并把发现的文件全部拼接进上下文(范围越具体的越靠后加载,从而优先级更高)。常用位置如下:</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>层级</th><th>位置</th><th>共享对象</th></tr>
+    <tr><td>企业 / 组织策略</td><td>macOS:<code>/Library/Application Support/ClaudeCode/CLAUDE.md</code><br>Linux/WSL:<code>/etc/claude-code/CLAUDE.md</code><br>Windows:<code>C:\Program Files\ClaudeCode\CLAUDE.md</code></td><td>组织内所有人</td></tr>
+    <tr><td>用户全局</td><td><code>~/.claude/CLAUDE.md</code></td><td>你自己,所有项目</td></tr>
+    <tr><td>项目(团队)</td><td><code>./CLAUDE.md</code> 或 <code>./.claude/CLAUDE.md</code></td><td>团队(随源码提交)</td></tr>
+    <tr><td>项目(个人)</td><td><code>./CLAUDE.local.md</code>(记得加进 <code>.gitignore</code>)</td><td>仅你,当前项目</td></tr>
+  </table>
+  </div>
+  <div class="box note">
+    <span class="tag">加载行为</span>
+    父目录的 CLAUDE.md 在启动时全量加载;<strong>子目录</strong>的 CLAUDE.md 则在 Claude 实际读取该目录文件时<strong>按需加载</strong>。这让你可以在 monorepo 的子包里放置局部规则。
+  </div>
+
+  <h3>4.2 用 /init 生成,用 /memory 维护</h3>
+  <ul>
+    <li><code>/init</code> —— 分析你的代码库,自动生成一份包含构建命令、测试方式、项目约定的初始 CLAUDE.md。若已存在,则会<strong>提出改进建议而非覆盖</strong>。</li>
+    <li><code>/memory</code> —— 列出当前会话加载的所有 CLAUDE.md / CLAUDE.local.md / 规则文件,可打开编辑。</li>
+    <li>想追加内容,最简单的方式是直接对 Claude 说:<em>"把这条加到 CLAUDE.md"</em>。</li>
+  </ul>
+
+  <h3>4.3 用 @ 导入拆分文件</h3>
+  <p>CLAUDE.md 可以用 <code>@路径</code> 语法导入其他文件,启动时一并展开加载(相对路径相对于该文件所在目录;最大递归深度 4 跳)。</p>
+  <pre><code>See @README for project overview and @package.json for available npm commands.
+
+# Additional Instructions
+- git workflow @docs/git-instructions.md
+- 跨 worktree 共享我的个人偏好 @~/.claude/my-project-instructions.md</code></pre>
+  <div class="box warn">
+    <span class="tag">注意</span>
+    用 <code>@</code> 拆分有助于<strong>组织结构</strong>,但<strong>不会减少上下文占用</strong> —— 被导入的文件同样在启动时全部加载。控制体积的关键是"少写",不是"拆开写"。
+  </div>
+
+  <h3>4.4 该写什么、不该写什么</h3>
+  <div class="compare">
+    <div class="card good">
+      <h5>✅ 应该写</h5>
+      <ul style="margin:0;">
+        <li>Claude 猜不到的 Bash 命令</li>
+        <li>与默认不同的代码风格规则</li>
+        <li>测试方式与首选测试运行器</li>
+        <li>仓库规范(分支命名、PR 约定)</li>
+        <li>项目特有的架构决策</li>
+        <li>环境怪癖(必需的环境变量)与常见坑</li>
+      </ul>
+    </div>
+    <div class="card bad">
+      <h5>❌ 不该写</h5>
+      <ul style="margin:0;">
+        <li>Claude 看代码就能推断的内容</li>
+        <li>语言的标准通用约定</li>
+        <li>详尽的 API 文档(给链接即可)</li>
+        <li>频繁变动的信息</li>
+        <li>冗长的解释 / 教程</li>
+        <li>逐文件的描述清单</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>4.5 黄金法则:保持精简</h3>
+  <blockquote class="box danger">
+    "保持精简。对每一行问自己:'删掉它会让 Claude 犯错吗?'如果不会,就删掉它。<strong>臃肿的 CLAUDE.md 会导致 Claude 忽略你真正的指令!</strong>"
+  </blockquote>
+  <ul>
+    <li><strong>目标体积:每个 CLAUDE.md 控制在 200 行以内。</strong>越长越占上下文,遵循度越低。</li>
+    <li><strong>像对待代码一样对待它</strong>:出问题时回顾、定期裁剪;通过观察 Claude 行为是否真的改变来"测试"你的改动。</li>
+    <li>可用 <code>IMPORTANT</code>、<code>YOU MUST</code> 等强调词提高关键指令的遵循度。</li>
+    <li>把它提交进 git,让团队共同维护 —— 它的价值会随时间复利增长。</li>
+  </ul>
+
+  <div class="compare">
+    <div class="card bad">
+      <h5>❌ 模糊</h5>
+      <p style="margin:0;">"Format code properly."<br>"Test your changes."</p>
+    </div>
+    <div class="card good">
+      <h5>✅ 具体可执行</h5>
+      <p style="margin:0;">"Use 2-space indentation."<br>"Run <code>npm test</code> before committing."</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="s5">
+  <h2><span class="num">5</span> 上下文窗口管理</h2>
+  <p class="lead">主动管理上下文,是把 Claude 用好与用废的分水岭。</p>
+
+  <h3>5.1 /clear:任务之间清场</h3>
+  <p>在两个<strong>不相关</strong>的任务之间,用 <code>/clear</code> 彻底重置上下文窗口。"漫长的会话里堆积的无关上下文会降低性能。"养成频繁 <code>/clear</code> 的习惯。</p>
+
+  <h3>5.2 /compact:压缩而非清空</h3>
+  <p>当接近上下文上限时,Claude Code 会<strong>自动压缩</strong>历史,把关键代码、文件状态和决策总结保留下来,腾出空间。你也可以手动并给出侧重:</p>
+  <pre><code>/compact Focus on the API changes</code></pre>
+  <div class="box tip">
+    <span class="tag">提示</span>
+    项目根目录的 CLAUDE.md 会在 <code>/compact</code> 后被<strong>重新从磁盘读取并重新注入</strong>;但子目录里的 CLAUDE.md、以及你<em>没有</em>主动调用过的技能,不会自动重新注入。
+  </div>
+
+  <h3>5.3 何时干脆开新会话</h3>
+  <blockquote class="box warn">
+    "如果你在同一个会话里就<strong>同一个问题纠正了 Claude 超过两次</strong> …… 运行 <code>/clear</code>,用一个更具体的提示重新开始。一个上下文干净、提示更好的新会话,几乎总是优于一个堆满纠正记录的长会话。"
+  </blockquote>
+  <p>典型场景:先在一个会话里把需求/方案讨论清楚,然后<strong>开新会话专门执行</strong>,让实现阶段拥有干净、聚焦的上下文。</p>
+
+  <h3>5.4 用 @ 引用文件,而不是描述位置</h3>
+  <div class="compare">
+    <div class="card bad">
+      <h5>❌ 描述位置</h5>
+      <p style="margin:0;">"在 src 下面那个处理用户登录的文件里,大概在中间位置,有个校验函数……"</p>
+    </div>
+    <div class="card good">
+      <h5>✅ 直接 @ 引用</h5>
+      <p style="margin:0;"><code>看看 @src/auth/validateLogin.ts 的边界情况</code><br>(Claude 会在回应前先读取该文件)</p>
+    </div>
+  </div>
+
+  <h3>5.5 善用子代理隔离上下文</h3>
+  <p>让<strong>子代理(subagent)</strong>去做大范围调查 —— 它在<strong>独立的上下文窗口</strong>里工作,只把结论摘要返回给主会话,从而避免主上下文被探索过程的噪音填满。例如:<em>"use subagents to investigate X"</em>。详见 <a href="#s7">7.3</a>。</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="s6">
+  <h2><span class="num">6</span> 工作流与计划模式</h2>
+  <p class="lead">好的工作流不是限制,而是让 Claude 少走弯路、让你少做纠正。</p>
+
+  <h3>6.1 推荐主流程:探索 → 计划 → 编码 → 提交</h3>
+  <ol>
+    <li><strong>探索(Explore)</strong>:进入计划模式,让 Claude 只读地阅读文件、回答问题,不做任何修改。</li>
+    <li><strong>计划(Plan)</strong>:让它给出一份<em>详细的实现方案</em>。可按 <code>Ctrl+G</code> 在编辑器里直接修改这份计划。</li>
+    <li><strong>编码(Code)</strong>:退出计划模式,让它对照方案实现,并自行验证。</li>
+    <li><strong>提交(Commit)</strong>:让它写一条描述性提交信息并开 PR,例如:<code>commit with a descriptive message and open a PR</code>。</li>
+  </ol>
+
+  <h3>6.2 计划模式(Plan Mode)</h3>
+  <p>计划模式让 Claude "<strong>研究并提出改动,但不实际执行</strong>":它会读文件、跑命令来探索、写出计划,但不会修改你的源码。</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>操作</th><th>方式</th></tr>
+    <tr><td>进入(循环切换模式)</td><td>按 <code>Shift+Tab</code> 在 <code>default → acceptEdits → plan</code> 间循环</td></tr>
+    <tr><td>仅对单条提示生效</td><td>提示前加 <code>/plan</code></td></tr>
+    <tr><td>启动即进入</td><td><code>claude --permission-mode plan</code></td></tr>
+    <tr><td>编辑计划</td><td><code>Ctrl+G</code> 在默认编辑器中打开方案修改</td></tr>
+    <tr><td>设为默认</td><td>设置文件中 <code>"permissions": { "defaultMode": "plan" }</code></td></tr>
+  </table>
+  </div>
+  <div class="box note">
+    <span class="tag">何时该计划</span>
+    "当你<strong>不确定方案</strong>、改动<strong>涉及多个文件</strong>、或你<strong>不熟悉所改代码</strong>时,计划最有用。如果你能用一句话描述这个 diff,那就跳过计划。"
+  </div>
+
+  <h3>6.3 测试驱动(TDD)协作</h3>
+  <p>给 Claude 一个"能自我验证"的目标,质量会显著提升。让它<strong>先写测试、再写实现、然后跑测试并根据失败迭代</strong>。一个有效模式是"双 Claude":一个写测试,另一个写代码去通过这些测试。</p>
+  <div class="compare">
+    <div class="card bad">
+      <h5>❌ 模糊</h5>
+      <p style="margin:0;"><code>给 foo.py 加点测试</code></p>
+    </div>
+    <div class="card good">
+      <h5>✅ 具体 + 可验证</h5>
+      <p style="margin:0;"><code>为 foo.py 写测试,覆盖"用户已登出"的边界情况。<strong>避免使用 mock</strong>。实现后运行这些测试。</code></p>
+    </div>
+  </div>
+  <div class="box warn">
+    <span class="tag">明确反对 mock</span>
+    做 TDD 时务必说明"避免 mock 实现",否则 Claude 可能写出能"骗过"测试的空壳实现。
+  </div>
+
+  <h3>6.4 视觉迭代工作流</h3>
+  <p>对 UI 类任务:粘贴设计稿截图 → 让 Claude 实现 → <strong>对结果再截图与原图对比</strong> → 列出差异并修复。例如:<em>"[粘贴截图] 实现这个设计。完成后对结果截图并与原图对比,列出差异并修复。"</em></p>
+
+  <h3>6.5 通用最佳实践</h3>
+  <ul>
+    <li><strong>指令越精准,纠正越少。</strong>把边界情况、约束(如"避免 mock")直接写进提示。</li>
+    <li><strong>提供富内容</strong>:用 <code>@</code> 引用文件、直接粘贴/拖拽图片、用 <code>cat error.log | claude</code> 把数据喂进来。</li>
+    <li><strong>尽早纠偏</strong>:<code>Esc</code> 中断、<code>Esc Esc</code> / <code>/rewind</code> 回退、直接说 <em>"Undo that"</em> 让它撤销。</li>
+    <li><strong>需要深度推理</strong>时,在提示中任意位置加入关键词 <code>ultrathink</code>。</li>
+  </ul>
+  <div class="box note">
+    <span class="tag">关于"思考"关键词</span>
+    当前官方文档中,<strong>只有 <code>ultrathink</code> 是被识别的关键词</strong>。早期博客里的 "think / think hard / think harder" 渐进式说法<strong>已不再是特殊关键词</strong>,会被当作普通文本。控制思考深度的主要方式是 <code>/effort</code> 等级(low / medium / high / xhigh / max)。
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="s7">
+  <h2><span class="num">7</span> 自定义扩展:命令 / Hooks / 子代理 / MCP</h2>
+  <p class="lead">把重复的工作流固化成命令,把"每次都要做的事"交给 Hooks 自动触发,把专项任务拆给子代理,把外部系统接入 MCP。</p>
+
+  <h3>7.1 自定义斜杠命令</h3>
+  <p>把常用提示词存成 Markdown 文件,即可变成 <code>/命令名</code> 复用。</p>
+  <div class="box note">
+    <span class="tag">文档变化</span>
+    官方已将"自定义命令"并入"技能(Skills)"体系:<code>.claude/commands/deploy.md</code> 与 <code>.claude/skills/deploy/SKILL.md</code> 都会创建 <code>/deploy</code> 且行为一致。<strong>你已有的 <code>.claude/commands/*.md</code> 仍然有效</strong>;下面的参数与字段语法对两者通用。
+  </div>
+  <ul>
+    <li><strong>项目级</strong>:<code>.claude/commands/</code> · <strong>个人级</strong>:<code>~/.claude/commands/</code></li>
+    <li>命令名 = 文件名(去扩展名)。输入 <code>/</code> 后跟名字调用。</li>
+  </ul>
+  <p><strong>参数占位符</strong>(注意:位置参数是 <strong>0 基</strong>的):</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>占位符</th><th>含义</th></tr>
+    <tr><td><code>$ARGUMENTS</code></td><td>调用时传入的全部参数</td></tr>
+    <tr><td><code>$ARGUMENTS[0]</code> / <code>$0</code></td><td>第 1 个参数(0 基索引;<code>$0</code> 是第一个)</td></tr>
+    <tr><td><code>$1</code></td><td>第 2 个参数,以此类推</td></tr>
+  </table>
+  </div>
+  <p><strong>常用 frontmatter 字段</strong>:<code>description</code>、<code>argument-hint</code>(自动补全提示)、<code>allowed-tools</code>(激活时免确认的工具)、<code>model</code>、<code>disable-model-invocation</code>。命令体内可用 <code>!`命令`</code> 在发送前注入 shell 输出。</p>
+  <pre><code>---
+name: fix-issue
+description: 按编号修复一个 GitHub issue
+argument-hint: [issue-number]
+allowed-tools: Bash(git add *) Bash(git commit *) Bash(git status *)
+---
+
+当前改动:!`git diff HEAD`
+
+请修复 issue #$0,遵循我们仓库的代码规范,并补充测试。</code></pre>
+  <p class="cap">示例:<code>/fix-issue 1234</code> 会把 <code>$0</code> 展开为 <code>1234</code>,并在提示中注入实时的 <code>git diff</code>。</p>
+
+  <h3>7.2 Hooks:在生命周期事件上自动触发</h3>
+  <p>Hooks 让你在工具调用前后等时机<strong>自动执行命令</strong>(如自动格式化、拦截危险编辑),配置在 settings.json 中。</p>
+  <ul>
+    <li><strong>配置位置</strong>:<code>~/.claude/settings.json</code>(全局)、<code>.claude/settings.json</code>(项目共享)、<code>.claude/settings.local.json</code>(项目个人,默认 gitignore)。</li>
+    <li><strong>常用事件名</strong>:<code>PreToolUse</code>、<code>PostToolUse</code>、<code>UserPromptSubmit</code>、<code>Notification</code>、<code>Stop</code>、<code>SubagentStop</code>、<code>SessionStart</code>、<code>SessionEnd</code>、<code>PreCompact</code>(实际事件集更大)。</li>
+    <li><strong>matcher</strong> 按工具名匹配(支持正则与 <code>|</code> 或),如 <code>Edit|Write</code>、<code>Bash</code>、<code>mcp__.*</code>;大小写敏感。</li>
+    <li><strong>退出码</strong>:<code>0</code> 放行;<strong><code>2</code> 阻断该动作</strong>并把 stderr 反馈给 Claude;其他码放行但记错。</li>
+    <li><code>/hooks</code> 打开只读的 hooks 浏览器(增删改请直接编辑 JSON)。</li>
+  </ul>
+  <h4>示例 A:编辑后用 Prettier 自动格式化</h4>
+  <pre><code>{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          { "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs npx prettier --write" }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+  <h4>示例 B:用退出码 2 拦截对保护文件的编辑</h4>
+  <pre><code>// .claude/hooks/protect-files.sh
+#!/bin/bash
+INPUT=$(cat)
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
+for pattern in ".env" "package-lock.json" ".git/"; do
+  if [[ "$FILE_PATH" == *"$pattern"* ]]; then
+    echo "Blocked: $FILE_PATH 命中保护规则 '$pattern'" >&2
+    exit 2     # 退出码 2 = 阻断
+  fi
+done
+exit 0</code></pre>
+
+  <h3>7.3 子代理(Subagents)</h3>
+  <p>子代理是带 YAML frontmatter 的 Markdown 文件,正文即其系统提示。它在<strong>独立上下文窗口</strong>中工作,适合拆分专项、并行调查。</p>
+  <ul>
+    <li><strong>位置</strong>:项目级 <code>.claude/agents/</code> · 用户级 <code>~/.claude/agents/</code>。</li>
+    <li><strong>frontmatter</strong>:<code>name</code> 与 <code>description</code> 必填;<code>tools</code>、<code>model</code> 选填(省略 tools 则继承全部工具)。</li>
+    <li><code>/agents</code> 打开管理界面(创建/编辑/删除,官方推荐方式)。</li>
+    <li>Claude 会<strong>根据 description 自动委派</strong>;在 description 里写上 "use proactively" 可鼓励主动调用。</li>
+  </ul>
+  <pre><code>---
+name: code-reviewer
+description: Reviews code for quality and best practices. Use proactively.
+tools: Read, Glob, Grep
+model: sonnet
+---
+
+You are a code reviewer. 分析代码并就质量、安全与最佳实践给出
+具体、可执行的反馈。</code></pre>
+  <div class="box tip">
+    <span class="tag">子代理最佳实践</span>
+    单一职责(每个只精于一件事)· 写详细的 description(Claude 据此决定委派)· 最小化工具权限 · 提交进版本库与团队共享。
+  </div>
+
+  <h3>7.4 MCP:接入外部工具与数据</h3>
+  <p>MCP(Model Context Protocol)让 Claude Code 连接外部系统(GitHub、数据库、Notion 等)。</p>
+  <pre><code># 远程 HTTP 服务器(推荐)
+claude mcp add --transport http notion https://mcp.notion.com/mcp
+
+# 本地 stdio 进程(-- 之后是启动该服务器的命令)
+claude mcp add --transport stdio airtable --env AIRTABLE_API_KEY=KEY \
+  -- npx -y airtable-mcp-server</code></pre>
+  <div class="tablewrap">
+  <table>
+    <tr><th>作用域</th><th>存储位置</th><th>团队共享</th></tr>
+    <tr><td>local(默认)</td><td><code>~/.claude.json</code></td><td>否(仅本项目)</td></tr>
+    <tr><td>project</td><td>项目根 <code>.mcp.json</code></td><td>是(随版本库)</td></tr>
+    <tr><td>user</td><td><code>~/.claude.json</code></td><td>否(你的所有项目)</td></tr>
+  </table>
+  </div>
+  <ul>
+    <li><strong>管理</strong>:<code>claude mcp list</code> / <code>get</code> / <code>remove</code>;会话内用 <code>/mcp</code> 查看状态、完成 OAuth 登录认证。</li>
+    <li><strong>工具命名</strong>:<code>mcp__&lt;服务器&gt;__&lt;工具&gt;</code>(如 <code>mcp__github__list_prs</code>)。</li>
+    <li><strong>引用资源</strong>:<code>@服务器:协议://路径</code>,如 <code>@github:issue://123</code>。</li>
+  </ul>
+  <div class="box danger">
+    <span class="tag">安全</span>
+    "连接前请确认你信任每个服务器。会抓取外部内容的服务器会带来<strong>提示注入(prompt injection)</strong>风险。" 出于安全,Claude Code 对来自 <code>.mcp.json</code> 的项目级服务器会先<strong>请求批准</strong>。
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="s8">
+  <h2><span class="num">8</span> 权限管理与安全</h2>
+  <p class="lead">Claude Code 只拥有你授予的权限 —— 安全的最后一道防线是你对工具调用的审阅。</p>
+
+  <h3>8.1 权限模式</h3>
+  <div class="tablewrap">
+  <table>
+    <tr><th>模式</th><th>无需询问即可执行</th><th>适用</th></tr>
+    <tr><td><code>default</code></td><td>仅读取</td><td>起步、敏感工作</td></tr>
+    <tr><td><code>acceptEdits</code></td><td>读取 + 文件编辑 + 常见文件系统命令</td><td>你在边审边迭代代码时</td></tr>
+    <tr><td><code>plan</code></td><td>仅读取(只探索、出方案)</td><td>改动前先摸清代码库</td></tr>
+    <tr><td><code>auto</code></td><td>全部,但有后台分类器做安全检查</td><td>长任务、减少打断(预览特性)</td></tr>
+    <tr><td><code>dontAsk</code></td><td>仅预先批准的工具</td><td>锁定的 CI / 脚本</td></tr>
+    <tr><td><code>bypassPermissions</code></td><td>全部(无任何确认)</td><td><strong>仅限隔离的容器 / 虚机</strong></td></tr>
+  </table>
+  </div>
+  <p>用 <code>Shift+Tab</code> 在 <code>default → acceptEdits → plan</code> 间循环;或启动时 <code>claude --permission-mode plan</code>;或在设置中 <code>"permissions": { "defaultMode": "acceptEdits" }</code>。</p>
+
+  <h3>8.2 权限规则:allow / ask / deny</h3>
+  <p><code>settings.json</code> 中的 <code>permissions</code> 含三个数组,按 <strong>deny → ask → allow</strong> 顺序求值,首个匹配决定结果。</p>
+  <pre><code>{
+  "permissions": {
+    "allow": ["Bash(npm run lint)", "Bash(npm run test *)", "Read(~/.zshrc)"],
+    "deny":  ["Bash(curl *)", "Read(./.env)", "Read(./.env.*)", "Read(./secrets/**)"]
+  }
+}</code></pre>
+  <ul>
+    <li>语法为 <code>工具</code> 或 <code>工具(限定符)</code>,如 <code>Bash(npm run test:*)</code>、<code>WebFetch(domain:*.example.com)</code>、<code>Edit</code>、<code>mcp__github__*</code>。</li>
+    <li><strong>任一层级 deny,其他层级都无法 allow</strong>;权限规则跨作用域是<strong>合并</strong>而非覆盖。</li>
+    <li><code>/permissions</code> 查看与管理所有规则及其来源文件。命令行可用 <code>--allowedTools</code> / <code>--disallowedTools</code>。</li>
+  </ul>
+
+  <h3>8.3 设置文件优先级(高 → 低)</h3>
+  <ol>
+    <li>企业托管设置(<code>managed-settings.json</code>,不可被覆盖)</li>
+    <li>命令行参数</li>
+    <li>项目个人:<code>.claude/settings.local.json</code></li>
+    <li>项目共享:<code>.claude/settings.json</code></li>
+    <li>用户:<code>~/.claude/settings.json</code></li>
+  </ol>
+
+  <h3>8.4 危险旁路与安全审查</h3>
+  <div class="box danger">
+    <span class="tag">--dangerously-skip-permissions</span>
+    等价于 <code>--permission-mode bypassPermissions</code>,跳过所有确认与安全检查。"<strong>仅在隔离环境(容器、虚机、无外网的 dev container)中使用</strong>",且它"对提示注入或意外操作不提供任何保护"。在 Linux/macOS 上拒绝以 root/sudo 启动。管理员可用 <code>permissions.disableBypassPermissionsMode: "disable"</code> 禁用它。
+  </div>
+  <ul>
+    <li><strong><code>/security-review</code></strong>:扫描代码库中的漏洞(SQL 注入、XSS、认证/授权缺陷、不安全数据处理、依赖漏洞)并解释,可让 Claude 修复。</li>
+    <li><strong>GitHub Action</strong>:<code>anthropics/claude-code-security-review</code> 在 PR 打开时自动审查并发表内联评论。</li>
+    <li><strong>你的责任</strong>:批准前审阅建议的代码与命令;别把不可信内容直接管道喂给 Claude;对关键文件的改动逐一核实;对外部服务的脚本放进虚机里跑。</li>
+  </ul>
+
+  <h3>8.5 团队协作规范</h3>
+  <ul>
+    <li>把 <code>./CLAUDE.md</code>、<code>.claude/commands/</code>、<code>.claude/agents/</code>、<code>.claude/settings.json</code>、<code>.mcp.json</code> <strong>提交进版本库</strong>,让团队共享同一套约定。</li>
+    <li>个人偏好放 <code>CLAUDE.local.md</code> / <code>.claude/settings.local.json</code> 并加入 <code>.gitignore</code>。</li>
+    <li>组织级强制策略用<strong>企业托管设置</strong>下发,任何本地设置都无法覆盖。</li>
+  </ul>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="s9">
+  <h2><span class="num">9</span> 常见误区与排错速查</h2>
+  <p class="lead">遇到"Claude 不听话"时,先对照这张表。</p>
+  <div class="tablewrap">
+  <table>
+    <tr><th>现象 / 误区</th><th>原因</th><th>对策</th></tr>
+    <tr><td>Claude 忽略 CLAUDE.md 里的指令</td><td>文件臃肿,关键指令被稀释</td><td>裁剪到 200 行内;对关键项加 <code>IMPORTANT</code>;无用项删除或改成 Hook</td></tr>
+    <tr><td>长会话越来越笨、答非所问</td><td>上下文被无关历史填满</td><td><code>/clear</code> 开新任务;或 <code>/compact</code> 压缩</td></tr>
+    <tr><td>同一问题反复纠正仍出错</td><td>会话上下文已被纠正记录污染</td><td>开<strong>新会话</strong> + 更具体的提示,往往一次到位</td></tr>
+    <tr><td>TDD 时它写了空壳实现骗过测试</td><td>未禁止 mock</td><td>提示中明确"避免 mock";先写测试再写实现</td></tr>
+    <tr><td>它在不熟的代码上乱改</td><td>没先探索就动手</td><td><code>Shift+Tab</code> 进计划模式,先出方案再执行</td></tr>
+    <tr><td>"think harder" 不起作用</td><td>该渐进词已非关键词</td><td>改用 <code>ultrathink</code> 或 <code>/effort high</code></td></tr>
+    <tr><td>它请求执行危险命令</td><td>默认就该让你确认</td><td>认真审阅再批准;用 <code>deny</code> 规则永久拦截(如 <code>Bash(curl *)</code>)</td></tr>
+    <tr><td>自定义命令位置参数取错</td><td>误用 1 基</td><td>位置参数是 <strong>0 基</strong>:<code>$0</code> 是第一个</td></tr>
+    <tr><td>子代理看不到当前对话</td><td>设计如此(独立上下文)</td><td>在调用指令里把必要背景显式交代清楚</td></tr>
+  </table>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="s10">
+  <h2><span class="num">10</span> 速查卡(Cheat Sheet)</h2>
+  <p class="lead">打印出来贴在显示器旁。</p>
+
+  <h3>高频斜杠命令</h3>
+  <div class="tablewrap">
+  <table>
+    <tr><th>命令</th><th>作用</th></tr>
+    <tr><td><code>/init</code></td><td>分析代码库,生成初始 CLAUDE.md</td></tr>
+    <tr><td><code>/memory</code></td><td>查看 / 编辑已加载的记忆文件</td></tr>
+    <tr><td><code>/clear</code></td><td>清空上下文,开始新任务</td></tr>
+    <tr><td><code>/compact [侧重]</code></td><td>压缩历史,保留关键信息</td></tr>
+    <tr><td><code>/rewind</code></td><td>回退对话 / 代码到某检查点</td></tr>
+    <tr><td><code>/plan</code></td><td>对单条提示启用计划模式</td></tr>
+    <tr><td><code>/permissions</code></td><td>查看 / 管理权限规则</td></tr>
+    <tr><td><code>/hooks</code></td><td>浏览已配置的 Hooks(只读)</td></tr>
+    <tr><td><code>/agents</code></td><td>创建 / 管理子代理</td></tr>
+    <tr><td><code>/mcp</code></td><td>查看 MCP 状态、OAuth 认证</td></tr>
+    <tr><td><code>/security-review</code></td><td>扫描代码安全漏洞</td></tr>
+  </table>
+  </div>
+
+  <h3>键盘与输入</h3>
+  <div class="tablewrap">
+  <table>
+    <tr><th>操作</th><th>作用</th></tr>
+    <tr><td><code>Shift+Tab</code></td><td>循环权限模式 default → acceptEdits → plan</td></tr>
+    <tr><td><code>Esc</code></td><td>中断当前动作(保留上下文)</td></tr>
+    <tr><td><code>Esc Esc</code></td><td>回退到之前的状态(等同 <code>/rewind</code>)</td></tr>
+    <tr><td><code>Ctrl+G</code></td><td>在编辑器中打开并修改计划</td></tr>
+    <tr><td><code>@路径</code></td><td>引用文件 / MCP 资源</td></tr>
+    <tr><td><code>!命令</code></td><td>shell 模式直接执行</td></tr>
+    <tr><td><code>ultrathink</code></td><td>本轮请求更深推理</td></tr>
+    <tr><td><code>cat x.log | claude</code></td><td>把数据管道喂给 Claude</td></tr>
+  </table>
+  </div>
+
+  <h3>关键文件一览</h3>
+  <div class="tablewrap">
+  <table>
+    <tr><th>路径</th><th>用途</th></tr>
+    <tr><td><code>./CLAUDE.md</code></td><td>项目记忆(团队共享,提交 git)</td></tr>
+    <tr><td><code>./CLAUDE.local.md</code></td><td>项目记忆(个人,gitignore)</td></tr>
+    <tr><td><code>~/.claude/CLAUDE.md</code></td><td>全局个人记忆</td></tr>
+    <tr><td><code>.claude/commands/*.md</code></td><td>自定义斜杠命令</td></tr>
+    <tr><td><code>.claude/agents/*.md</code></td><td>子代理定义</td></tr>
+    <tr><td><code>.claude/settings.json</code></td><td>项目共享设置(权限 / Hooks)</td></tr>
+    <tr><td><code>.claude/settings.local.json</code></td><td>项目个人设置(gitignore)</td></tr>
+    <tr><td><code>.mcp.json</code></td><td>项目级 MCP 服务器</td></tr>
+  </table>
+  </div>
+
+  <p style="margin-top:24px;"><a class="back" href="#top">↑ 回到目录</a></p>
+</section>
+
+</div>
+
+<footer>
+  <p>《Claude Code 使用最佳实践》· 团队培训教材</p>
+  <p>本教材内容依据 Anthropic 官方文档核对。命令名、配置路径与字段会随版本演进,以最新官方文档为准。</p>
+  <div class="sources">
+    <strong>主要参考(均为 Anthropic 官方文档)</strong>
+    <ul>
+      <li>最佳实践:code.claude.com/docs/en/best-practices</li>
+      <li>记忆 / CLAUDE.md:code.claude.com/docs/en/memory</li>
+      <li>权限与权限模式:code.claude.com/docs/en/permissions · /permission-modes</li>
+      <li>技能 / 斜杠命令:code.claude.com/docs/en/skills</li>
+      <li>Hooks:code.claude.com/docs/en/hooks · /hooks-guide</li>
+      <li>子代理:code.claude.com/docs/en/sub-agents</li>
+      <li>MCP:code.claude.com/docs/en/mcp</li>
+      <li>安全:code.claude.com/docs/en/security</li>
+    </ul>
+  </div>
+</footer>
+
+</body>
+</html>
